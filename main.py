@@ -1,19 +1,19 @@
+import pandas as pd
+import numpy as np  # needs numpy 2.0 or earlier
+import pynapple as nap  # for easier loading of NWB file
+import matplotlib.pyplot as plt
+
 def main():
 
-    import pandas as pd
-    import numpy as np  # needs numpy 2.0 or earlier
-    import pynapple as nap # for easier loading of NWB file
-    import matplotlib.pyplot as plt
-
-    # Open and read the NWB file
+    # Read the NWB file
     nwb_file_path = '/Users/doctordu/Downloads/sub-A1813_behavior+ecephys+ogen.nwb'  # Replace with your actual NWB file path
     data = nap.load_file(nwb_file_path)
     print(data)
 
-    # Open and read opto stim file
-    stim_file_path = '/Users/doctordu/Downloads/Opto_TS.csv'
+    # Read opto stim file
+    stim_file_path = '/Users/doctordu/Downloads/Opto_stim.csv'
     stim_timestamps = pd.read_csv(stim_file_path).to_numpy()
-    stim_timestamps = stim_timestamps[:, 0] # get only stim onset timestamps
+
 
 
     # plot a PSTH of unit spikes on opto stim
@@ -26,7 +26,7 @@ def main():
     bin_size = 0.1  # Bin size in seconds
     window = (-2, 2)  # Time window around each stimulus
 
-    aligned_spikes = [] # Align spikes to each stimulus
+    aligned_spikes = []  # Align spikes to each stimulus
     for stim in stim_timestamps:
         aligned_spikes.extend(spikes - stim)
 
@@ -83,8 +83,6 @@ def main():
     plt.title("Event-Related LFP")
     plt.legend()
     plt.show()
-
-
 
 
 if __name__ == "__main__":
