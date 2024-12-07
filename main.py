@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np  # needs numpy 2.0 or earlier
 import pynapple as nap  # for easier loading of NWB file
 import matplotlib.pyplot as plt
@@ -12,23 +11,27 @@ def main():
 
     # Read opto stim file
     stim_file_path = '/Users/doctordu/Downloads/Opto_stim.csv'
-    stim_timestamps = pd.read_csv(stim_file_path).to_numpy()
+    stim_timestamps = np.loadtxt(stim_file_path, delimiter=',').flatten()
 
-
-
-    # plot a PSTH of unit spikes on opto stim
-
-    # load some unit spike times
+    # load some unit spike times and plot PSTH
     cell_number = 1
     spikes = data['units'][cell_number].times()
-
-    # Plot PSTH on opto stim
     bin_size = 0.1  # Bin size in seconds
     window = (-2, 2)  # Time window around each stimulus
+    plot_psth(spikes, stim_timestamps, bin_size, window)
 
+    # now plot Event Related Potential of LFP on opto stim
+    lfp_chan_number = 50 # pick LFP channel
+    lfp = data['LFP']
+    lfp_timestamps = lfp.times()
+    lfp_one_chan = lfp[:, lfp_chan_number].data()
+    window = (-2, 2)  # Time window around each stimulus (in seconds)
+    plot_erp(lfp_one_chan, lfp_timestamps, stim_timestamps, window)
+
+def plot_psth(spikes, triggers, bin_size, window):
     aligned_spikes = []  # Align spikes to each stimulus
-    for stim in stim_timestamps:
-        aligned_spikes.extend(spikes - stim)
+    for trigger in triggers:
+        aligned_spikes.extend(spikes - trigger)
 
     aligned_spikes = np.array([s for s in aligned_spikes if window[0] <= s <= window[1]]) # Filter spikes to keep only those within the window
     bins = np.arange(window[0], window[1] + bin_size, bin_size) # Create histogram bins
@@ -42,29 +45,21 @@ def main():
     plt.legend()
     plt.show()
 
+def plot_erp(timeseries, timestamps, triggers, window):
 
-    # now plot Event Related Potential of LFP on opto stim
-
-    lfp_chan_number = 50 # pick LFP channel
-    lfp = data['LFP']
-    sampling_rate = lfp.rate
-    lfp_timestamps = lfp.times()
-    lfp_one_chan = lfp[:, lfp_chan_number]
-
-    # Parameters for ERP
-    window = (-2, 2)  # Time window around each stimulus (in seconds)
+    sampling_rate = 1 / timestamps[1]-timestamps[0]
     window_samples = int((window[1] - window[0]) * sampling_rate)  # Samples per window
 
     # Align LFP to each stimulus
-    aligned_lfp = []
-    for stim in stim_timestamps:
+    aligned_timeseries = []
+    for trigger in triggers:
         # Find LFP indices within the window of the current stimulus
-        start_idx = np.searchsorted(lfp_timestamps, stim + window[0])
-        end_idx = np.searchsorted(lfp_timestamps, stim + window[1])
+        start_idx = np.searchsorted(timestamps, trigger + window[0])
+        end_idx = np.searchsorted(timestamps, trigger + window[1])
         if end_idx - start_idx == window_samples:
-            aligned_lfp.append(lfp_one_chan[start_idx:end_idx])
+            aligned_timeseries.append(timeseries[start_idx:end_idx])
 
-    aligned_lfp = np.array(aligned_lfp)
+    aligned_lfp = np.array(aligned_timeseries)
 
     # Compute the average and standard error
     mean_lfp = aligned_lfp.mean(axis=0)
