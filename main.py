@@ -41,7 +41,7 @@ def plot_psth(spikes, triggers, bin_size, window):
     plt.bar(edges[:-1], counts, width=bin_size, align="edge", color="blue", edgecolor="black")
     plt.xlabel("Time (s) relative to stim")
     plt.ylabel("Spike count")
-    plt.axvline(0, color="red", linestyle="--", label="Stimulus time")  # Highlight stimulus
+    plt.vlines([0], ymin=0, ymax=np.max(counts), color='red', linestyle='--', label='Stimulus_time')  # Highlight stimulus
     plt.legend()
     plt.show()
 
@@ -72,7 +72,7 @@ def plot_erp(timeseries, timestamps, triggers, window):
     plt.figure(figsize=(8, 5))
     plt.plot(time_vector, mean_lfp, label="Average LFP", color="blue")
     plt.fill_between(time_vector, mean_lfp - std_error, mean_lfp + std_error, color="blue", alpha=0.3, label="SEM")
-    plt.axvline(0, color="red", linestyle="--", label="Stimulus")
+    plt.vlines([0], ymin=np.min(mean_lfp)*1.2, ymax=np.max(mean_lfp)*1.2, color='red', linestyle='--', label='Stimulus_time')  # Highlight stimulus
     plt.xlabel("Time (s) relative to stimulus")
     plt.ylabel("LFP Signal")
     plt.title("Event-Related LFP")
